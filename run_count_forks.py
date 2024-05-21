@@ -8,7 +8,7 @@ import argparse
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', type=str, required=True, help='fork list of the repository (JSON file)')
+    parser.add_argument('-f', '--file', type=str, help='fork list of the repository (JSON file)')
     args = parser.parse_args()
 
     if args.file:
