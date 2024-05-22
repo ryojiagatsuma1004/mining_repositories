@@ -13,6 +13,7 @@ def main():
     # 引数の解析
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=str, help='fork list of the repository (JSON file)')
+    parser.add_argument('-p', '--parallel', type=str, help='Number of parallel clone (default is 4)')
     args = parser.parse_args()
     cwd = os.path.dirname(__file__)
     ctime = utils.generate_timestamp()
@@ -25,6 +26,12 @@ def main():
     else:
         forks_list = json.load(sys.stdin)
 
+    # 並列クローン数の指定があれば読み取る
+    if args.parallel:
+        max_parallel = args.parallel
+    else:
+        max_parallel = 4
+
     # リポジトリとクローン先のディレクトリのリストを作成
     repositories = []
     for fork in forks_list:
@@ -34,7 +41,7 @@ def main():
         })
 
     # 非同期でクローン
-    asyncio.run(clone.clone_repositories_async(repositories))
+    asyncio.run(clone.clone_repositories_async(repositories, max_parallel=max_parallel))
 
 
 if __name__ == '__main__':
