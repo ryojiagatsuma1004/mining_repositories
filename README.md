@@ -6,17 +6,20 @@
 
 ```bash
 # インストール及びテスト実行は省略可
-# スクリプトをインストール
-# pip install -e .
-# テスト実行
-# python setup.py test
+##スクリプトをインストール
+python3 -m venv venv
+source ./venv/bin/activate
+python3 -m pip install --upgrade pip
+pip install -e .
+## テスト実行
+python3 setup.py test
 
 # REPO_FULL_NAME をフォークしているリポジトリのリストを取得
-python run_list_forks.py -e ENV_GITHUBH_TOKEN -r REPO_FULL_NAME > forks.json
+python3 run_list_forks.py -e ENV_GITHUBH_TOKEN -r REPO_FULL_NAME > forks.json
 # フォークリポジトリ数をカウント
-cat forks.json | python run_count_forks.py > autoware_forks_count.txt
+cat forks.json | python3 run_count_forks.py > autoware_forks_count.txt
 # フォークリポジトリをクローン
-cat forks.json | python run_clone_repositories.py
+cat forks.json | python3 run_clone_repositories.py
 ```
 
 ## json ファイルのフォーマット
@@ -77,6 +80,7 @@ cat forks.json | python run_clone_repositories.py
 ├── run_clone_repositories.py: リポジトリのリストから全リポジトリをクローンするスクリプト
 ├── run_count_forks.py: フォークリポジトリ数をカウントするスクリプト
 ├── run_list_forks.py: リポジトリのフォークを取得するスクリプト
+├── run_make_repo_url.py: json2csv
 ├── setup.py
 ├── tests: ライブラリのテスト
 │  ├── __init__.py
