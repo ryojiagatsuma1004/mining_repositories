@@ -6,63 +6,70 @@ from io import StringIO
 import shutil
 from mining_repositories.clone import clone_repository_async, clone_repositories_async, \
     get_repository_name
+import tempfile
 
 
 class TestCloneFunctions(unittest.TestCase):
     def setUp(self):
-        self.repository1 = "https://github.com/ryojiagatsuma1004/CSVPrinter.git"
-        self.repository2 = "https://github.com/ryojiagatsuma1004/CSVPrinterFail.git"
-        self.cwd = os.path.dirname(__file__)
-        self.directory1 = os.path.join(self.cwd, get_repository_name(self.repository1))
-        self.directory2 = os.path.join(self.cwd, "abc")
-        self.test_dirs = []
+        self.exist_repo = "https://github.com/ryojiagatsuma1004/CSVPrinter.git"
+        self.not_exist_repo = "https://github.com/ryojiagatsuma1004/CSVPrinterFail.git"
+        self.cwd = os.getcwd()
 
     def tearDown(self):
-        # テスト後に生成されたディレクトリを削除
-        for test_dir in self.test_dirs:
-            if os.path.exists(test_dir):
-                shutil.rmtree(test_dir)
+        os.chdir(self.cwd)
 
-    def test_get_repository_name_is_exist(self):
-        name = get_repository_name(self.repository1)
+    def test_get_repository_name_exist_repo_name(self):
+        name = get_repository_name(self.exist_repo)
         self.assertEqual(name, 'CSVPrinter')
 
-    def test_get_repository_name_is_not_exist(self):
+    def test_get_repository_name_not_exist_repo_name(self):
         with self.assertRaises(Exception) as e:
             get_repository_name('https://www.google.com')
-
         self.assertIn("Invalid repository URL:", str(e.exception))
 
     def test_clone_repository_async_exist_repo(self):
+        semaphore = asyncio.Semaphore(4)
         loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(clone_repository_async(self.repository1))
-        self.test_dirs.append(os.path.join(self.cwd, get_repository_name(self.repository1)))
-        self.assertTrue(os.path.exists(os.path.join(self.cwd, get_repository_name(self.repository1))))
+        temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, temp_dir)
+        os.chdir(temp_dir)
+        result = loop.run_until_complete(clone_repository_async(semaphore, self.exist_repo))
+        self.assertTrue(os.path.exists(os.path.join(temp_dir, get_repository_name(self.exist_repo))))
 
     def test_clone_repository_async_exist_repo_and_dir(self):
+        semaphore = asyncio.Semaphore(4)
+        temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, temp_dir)
+        os.chdir(temp_dir)
         loop = asyncio.get_event_loop()
-        result = loop.run_until_complete(clone_repository_async(self.repository1, self.directory1))
-        self.test_dirs.append(self.directory1)
-        self.assertTrue(os.path.exists(self.directory1))
+        result = loop.run_until_complete(
+            clone_repository_async(semaphore, self.exist_repo, os.path.join(temp_dir, "tcraerad")))
+        self.assertTrue(os.path.exists(os.path.join(temp_dir, "tcraerad")))
 
     def test_clone_repositories_async_exist_repo(self):
+        temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, temp_dir)
+        os.chdir(temp_dir)
+
         repos = [
-            {'repository': self.repository1, 'directory': self.directory2},
-            {'repository': self.repository1}
+            {'repository': self.exist_repo, 'directory': os.path.join(temp_dir, "tcraer")},
+            {'repository': self.exist_repo}
         ]
 
         loop = asyncio.get_event_loop()
         result = loop.run_until_complete(clone_repositories_async(repos))
 
-        self.test_dirs.append(self.directory1)
-        self.test_dirs.append(self.directory2)
-        self.assertTrue(os.path.exists(self.directory1))
-        self.assertTrue(os.path.exists(self.directory2))
+        self.assertTrue(os.path.exists(os.path.join(temp_dir, "tcraer")))
+        self.assertTrue(os.path.exists(os.path.join(temp_dir, "CSVPrinter")))
 
     def test_clone_repositories_async_not_exist_repo(self):
+        temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, temp_dir)
+        os.chdir(temp_dir)
+
         repos = [
-            {'repository': self.repository2, 'directory': self.directory2},
-            {'repository': self.repository2}
+            {'repository': self.not_exist_repo, 'directory': os.path.join(temp_dir, "tcraer")},
+            {'repository': self.not_exist_repo}
         ]
 
         # 標準エラー出力をキャプチャして、エラーメッセージが出力されているか確認
@@ -70,6 +77,36 @@ class TestCloneFunctions(unittest.TestCase):
             loop = asyncio.get_event_loop()
             result = loop.run_until_complete(clone_repositories_async(repos))
             self.assertIn('Failed to clone', mock_stderr.getvalue())
+
+    def test_clone_repositories_async_can_clone_40_repo(self):
+        temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, temp_dir)
+        os.chdir(temp_dir)
+
+        repos = []
+        for i in range(40):
+            repos.append({'repository': self.exist_repo, 'directory': os.path.join(temp_dir, str(i))})
+
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(clone_repositories_async(repos))
+
+        for i in repos:
+            self.assertTrue(os.path.exists(i['directory']))
+
+    def test_clone_repositories_async_can_clone_100_repo_10_parallel(self):
+        temp_dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, temp_dir)
+        os.chdir(temp_dir)
+
+        repos = []
+        for i in range(100):
+            repos.append({'repository': self.exist_repo, 'directory': os.path.join(temp_dir, str(i))})
+
+        loop = asyncio.get_event_loop()
+        result = loop.run_until_complete(clone_repositories_async(repos, max_parallel=10))
+
+        for i in repos:
+            self.assertTrue(os.path.exists(i['directory']))
 
 
 if __name__ == '__main__':
