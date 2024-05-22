@@ -17,34 +17,36 @@ def get_repository_name(repository):
     return repo_name
 
 
-async def clone_repository_async(repository, directory=''):
-    if directory == '':
-        command = ["git", "clone", repository, '--quiet']
-    else:
-        command = ["git", "clone", repository, directory, '--quiet']
-    # create a process
-    process = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                                   env={**os.environ, "GIT_ASKPASS": "/bin/echo"})
-    # wait for the process to complete
-    stdout, stderr = await process.communicate()
+async def clone_repository_async(semaphore, repository, directory=''):
+    async with semaphore:
+        if directory == '':
+            command = ["git", "clone", repository, '--quiet']
+        else:
+            command = ["git", "clone", repository, directory, '--quiet']
+        # create a process
+        process = await asyncio.create_subprocess_exec(*command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                       env={**os.environ, "GIT_ASKPASS": "/bin/echo"})
+        # wait for the process to complete
+        stdout, stderr = await process.communicate()
 
-    if process.returncode != 0:
-        error_message = f"Failed to clone {repository}: {stderr.decode()}"
-        print(error_message, file=sys.stderr)
+        if process.returncode != 0:
+            error_message = f"Failed to clone {repository}: {stderr.decode()}"
+            print(error_message, file=sys.stderr)
 
-    return process.returncode
+        return process.returncode
 
 
-async def clone_repositories_async(repos):
+async def clone_repositories_async(repos, max_parallel=4):
+    semaphore = asyncio.Semaphore(max_parallel)
     tasks = []
     for repo in repos:
         repo_url = repo['repository']
 
         dest_dir = repo.get('directory')
         if dest_dir is None:
-            tasks.append(clone_repository_async(repo_url))
+            tasks.append(clone_repository_async(semaphore, repo_url))
         else:
-            tasks.append(clone_repository_async(repo_url, dest_dir))
+            tasks.append(clone_repository_async(semaphore, repo_url, dest_dir))
 
     result = await asyncio.gather(*tasks, return_exceptions=True)
     return result
