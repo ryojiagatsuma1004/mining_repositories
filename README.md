@@ -20,6 +20,8 @@ python3 run_list_forks.py -e ENV_GITHUBH_TOKEN -r REPO_FULL_NAME > forks.json
 cat forks.json | python3 run_count_forks.py > autoware_forks_count.txt
 # フォークリポジトリをクローン
 cat forks.json | python3 run_clone_repositories.py
+# クローン出来たリポジトリの数を出力
+./run_count_dirs_at_depth.sh ./fork_repositories 2
 ```
 
 ## json ファイルのフォーマット
