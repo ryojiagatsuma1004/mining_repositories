@@ -22,6 +22,8 @@ cat forks.json | python3 run_count_forks.py > autoware_forks_count.txt
 cat forks.json | python3 run_clone_repositories.py
 # クローン出来たリポジトリの数を出力
 ./run_count_dirs_at_depth.sh ./fork_repositories 2
+# クローン出来たリポジトリの情報で json を更新
+cat forks.json | python3 run_update_clone_reps_metadata.py -b data/forks > forked_repo.json
 ```
 
 ## json ファイルのフォーマット
