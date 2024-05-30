@@ -7,3 +7,5 @@ mining_repositories.egg-info/
 *.json
 *.csv
 *.txt
+
+!.devcontainer/devcontainer.json
