@@ -2,3 +2,8 @@ data/
 venv/
 .idea/
 */__pycache__/
+mining_repositories.egg-info/
+2024-05-23-00-31-56/
+*.json
+*.csv
+*.txt
