@@ -13,5 +13,6 @@ RUN dnf install -y \
         unzip \
         curl \
         git \
-        python3.10 && \
+        python3 \
+        python3-pip && \
     dnf clean all
