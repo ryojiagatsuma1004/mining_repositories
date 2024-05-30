@@ -27,7 +27,7 @@ def main():
 
     for repo in forks_list:
         if os.path.isdir(os.path.join(base_dir, repo['full_name'])):
-            repo['relative_path'] = os.path.relpath(rp, repo['full_name'])
+            repo['relative_path'] = os.path.join(rp, repo['full_name'])
             updated_fork_repos.append(repo)
 
     print(json.dumps(updated_fork_repos, indent=4))
