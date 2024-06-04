@@ -17,7 +17,7 @@ def main():
     args = parser.parse_args()
     cwd = os.path.dirname(__file__)
     ctime = utils.generate_timestamp()
-    base_dir = os.path.join(cwd, ctime, 'fork_repositories')
+    base_dir = os.path.join(cwd, ctime)
 
     # リポジトリリストの読み込み
     if args.file:
