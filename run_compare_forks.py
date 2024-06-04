@@ -35,7 +35,6 @@ def main():
             fork_cid = cu.get_commit_ids(os.path.join(base_dir, fork["relative_path"]))
             commit_diff_set = cu.compare_commit_sets(set(orignal_cid), set(fork_cid))
             if bool(commit_diff_set):
-                print(fork_cid)
                 fork['commit_diff'] = list(commit_diff_set)
                 repos_with_changes.append(fork)
         except Exception as e:
