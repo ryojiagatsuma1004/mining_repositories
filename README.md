@@ -14,16 +14,34 @@ pip install -e .
 ## テスト実行
 python3 setup.py test
 
-# REPO_FULL_NAME をフォークしているリポジトリのリストを取得
-python3 run_list_forks.py -e ENV_GITHUBH_TOKEN -r REPO_FULL_NAME > forks.json
-# フォークリポジトリ数をカウント
-cat forks.json | python3 run_count_forks.py > autoware_forks_count.txt
-# フォークリポジトリをクローン
-cat forks.json | python3 run_clone_repositories.py
-# クローン出来たリポジトリの数を出力
+# 変数の定義
+REPO_FULL_NAME=NAME
+FORKS=FILENAME.json
+BASEDIR=DIR
+HAVE_DIFF=DIFF.json
+ORIGINAL_REPO=DIR
+AW=DIR
+AWAI=DIR
+
+# 実行
+## REPO_FULL_NAME をフォークしているリポジトリのリストを取得
+python3 run_list_forks.py -e ENV_GITHUBH_TOKEN -r $REPO_FULL_NAME > $FORKS
+## フォークリポジトリをクローン
+cat $FORKS | python3 run_clone_repositories.py
+## クローン出来たリポジトリの情報で json を更新
+cat $FORKS | python3 run_sync_clone_repos.py -b $BASEDIR > $BASEDIR/$FORKS
+## オリジナルリポジトリとフォークリポジトリを比較，オリジナルリポジトリリポジトリよりコミットが進んでいるフォークリポジトリのみを抽出
+cat $BASEDIR/$FORKS | python3 run_compare_forks.py --original $ORIGINAL_REPO -b $BASEDIR > $HAVE_DIFF
+
+# その他
+## フォークリポジトリ数をカウント
+cat $FORKS | python3 run_count_forks.py
+## クローン出来たリポジトリの数を出力
 ./run_count_dirs_at_depth.sh ./fork_repositories 2
-# クローン出来たリポジトリの情報で json を更新
-cat forks.json | python3 run_update_clone_reps_metadata.py -b data/forks > forked_repo.json
+## Autoware のリポジトリを出力
+cat $BASEDIR/$FORKS | python3 run_is_autoware.py -b $AW > $BASEDIR/autoware-$FORKS
+## Autoware AI のリポジトリを出力
+cat $BASEDIR/$FORKS | python3 run_is_autoware_ai.py -b $AWAI > $BASEDIR/autoware-ai-$FORKS
 ```
 
 ## json ファイルのフォーマット
@@ -94,10 +112,4 @@ cat forks.json | python3 run_update_clone_reps_metadata.py -b data/forks > forke
 │  └── test_utils.py
 ```
 
-## TODO
 
-- ドキュメントの整備
-- 変更されたコミットのファイル名を取得するスクリプトの作成
-    - コミットIDを取得するコードを作成
-    - コミットIDの差を見るコードを作成
-    - 変更があったリポジトリとコミットIDのリストを取得するコードを作成
