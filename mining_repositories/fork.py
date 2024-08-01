@@ -42,3 +42,15 @@ def count_forks(forks_list):
         return len(forks_list)
     else:
         raise ValueError("引数 forks_list はリスト型である必要があります。")
+
+
+def count_forks_branchs(forks_list):
+    if isinstance(forks_list, list):
+        count = 0
+        # フォークの長さを返す
+        for fork in forks_list:
+            if len(fork["branches"]) > 1:
+                count += 1
+        return count
+    else:
+        raise ValueError("引数 forks_list はリスト型である必要があります。")

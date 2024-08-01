@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 from datetime import datetime
 from github.GithubException import GithubException
-import mining_repositories.fork as mrf
+import mining_repositories.fork as mrb
 import os
 import json
 
@@ -47,7 +47,7 @@ class TesFork(unittest.TestCase):
             )
         ]
         # フォークリストを取得
-        forks_list = mrf.list_forks(self.mock_github_instance, self.repo_full_name)
+        forks_list = mrb.list_forks(self.mock_github_instance, self.repo_full_name)
 
         # 期待される結果を読み込み
         expected_file_path = os.path.join(os.path.dirname(__file__), 'mock_forks.json')
@@ -61,7 +61,7 @@ class TesFork(unittest.TestCase):
         self.mock_github_instance.get_repo.side_effect = GithubException(404, 'Not Found', None)
 
         with self.assertRaises(Exception) as context:
-            mrf.list_forks(self.mock_github_instance, self.repo_full_name)
+            mrb.list_forks(self.mock_github_instance, self.repo_full_name)
 
         self.assertIn("情報取得に失敗しました", str(context.exception))
 
@@ -71,9 +71,9 @@ class TesFork(unittest.TestCase):
         with open(expected_file_path, 'r') as f:
             expected_forks_list = json.load(f)
 
-        self.assertEqual(mrf.count_forks(expected_forks_list), len(expected_forks_list))
+        self.assertEqual(mrb.count_forks(expected_forks_list), len(expected_forks_list))
 
     def test_count_forks_is_not_list(self):
         obj = {'key': 'value'}
         with self.assertRaises(Exception) as e:
-            mrf.count_forks(obj)
+            mrb.count_forks(obj)

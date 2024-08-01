@@ -4,7 +4,7 @@ import os
 import argparse
 from github import Github
 import json
-import mining_repositories.fork as mrf
+import mining_repositories.fork as mrb
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
     github_instance = Github(gh_token)
 
     # リポジトリのフォーク一覧を取得
-    forks_list = mrf.list_forks(github_instance, repo_name)
+    forks_list = mrb.list_forks(github_instance, repo_name)
     # フォーク一覧をJSON形式で出力
     print(json.dumps(forks_list, indent=4))
 
