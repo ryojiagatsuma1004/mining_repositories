@@ -32,6 +32,8 @@ cat $FORKS | python3 run_clone_repositories.py
 cat $FORKS | python3 run_sync_clone_repos.py -b $BASEDIR > $BASEDIR/$FORKS
 ## オリジナルリポジトリとフォークリポジトリを比較，オリジナルリポジトリリポジトリよりコミットが進んでいるフォークリポジトリのみを抽出
 cat $BASEDIR/$FORKS | python3 run_compare_forks.py --original $ORIGINAL_REPO -b $BASEDIR > $HAVE_DIFF
+## csvに変換
+cat $HAVE_DIFF | python3 run_json2csv.py > $FORKS.csv
 
 # その他
 ## フォークリポジトリ数をカウント
