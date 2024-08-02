@@ -11,7 +11,7 @@ def main():
     sorted_data = sorted(data, key=lambda x: len(x['commit_diff']), reverse=True)
 
     # CSV出力のためのヘッダー
-    csv_header = ["html_url", "commit_diff_count"]
+    csv_header = ["repository_url", "commits_ahead"]
 
     # CSV出力
     csv_output = csv.writer(sys.stdout)
