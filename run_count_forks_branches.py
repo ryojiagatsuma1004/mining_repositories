@@ -1,4 +1,4 @@
-# usage: cat fork.json | python run_count_forks.py > count.txt
+# usage: cat ai2023v2.json | python run_count_forks_branches.py
 
 import sys
 import json
@@ -18,7 +18,7 @@ def main():
         forks_list = json.load(sys.stdin)
 
     try:
-        count = mrb.count_forks(forks_list)
+        count = mrb.count_forks_branchs(forks_list)
         print(count)
     except json.JSONDecodeError:
         print("input data is not a json format", file=sys.stderr)
